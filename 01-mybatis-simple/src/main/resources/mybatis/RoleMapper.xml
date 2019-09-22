@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="net.riking.mybatis.simple.mapper.RoleMapper">
+
+    <!-- 动态SQL操作 if、choose标记  -->
+    <!-- IF标记   场景一：  如果传入对象属性name值为空，查询所有-->
+    <select id="selectRoleOneOrAllByName" parameterType="net.riking.mybatis.simple.entity.Role"  resultType="net.riking.mybatis.simple.entity.Role">
+     select *  from  roles where 1=1
+      <if test="name!=null">
+          and   name =#{name}
+      </if>
+    </select>
+
+    <!-- choose标记   场景二：
+      1）. 如果类属性name不为空， select * from roles where name =?
+      2）. 如果类属性name为空,类属性description不为空， select * from roles where description =?
+      3）. 如果类属性name和description都为空  select * from roles where code =?-->
+    <select id="selectRoleByNameOrDescOrCode" parameterType="net.riking.mybatis.simple.entity.Role"  resultType="net.riking.mybatis.simple.entity.Role">
+          select *  from  roles where
+          <choose>
+              <when test="name!=null">
+                  name =#{name}
+              </when>
+              <when test="description!=null">
+                  description =#{description}
+              </when>
+              <otherwise>
+                  code=#{code}
+              </otherwise>
+          </choose>
+
+
+    </select>
+
+
+    <!-- 动态SQL操作 where、set、trim  -->
+
+    <!-- where标记 智能条件   场景三：  改写场景一-->
+    <select id="selectRoleOneOrAllByName2" parameterType="net.riking.mybatis.simple.entity.Role"  resultType="net.riking.mybatis.simple.entity.Role">
+        select *  from  roles
+        <where>
+            <if test="name!=null">
+                name =#{name}
+            </if>
+        </where>
+    </select>
+
+    <!-- where标记 智能赋值   场景四：  根据ID  赋值类属性name和code
+     update roles set name=?, code=? where id=? -->
+    <update id="updateRoleByNameAndCode" parameterType="net.riking.mybatis.simple.entity.Role">
+        update  roles
+        <set>
+           <if test="name!=null">
+             name=#{name},
+           </if>
+           <if test="code!=null">
+               code=#{code},
+           </if>
+        </set>
+        where  id=#{id}
+    </update>
+    <!-- trim标记 代替
+     prefix :前缀增加    suffix：后缀增加
+     prefixOverrides: 自动判断前置   suffixOverrides：自动判断后置
+     场景五：  update roles set name=?, code=? where id=?    -->
+    <update id="updateRoleByNameAndCode2" parameterType="net.riking.mybatis.simple.entity.Role">
+        update  roles
+        <trim prefix="set" suffix="where  id=#{id}"  suffixOverrides=",">
+            <if test="name!=null">
+                name=#{name},
+            </if>
+            <if test="code!=null">
+                code=#{code},
+            </if>
+        </trim>
+    </update>
+
+
+    <!-- trim    增加场景加深理解   select * from roles where name =? and code=?  -->
+    <select id="selectRoleOneOrAllByNameOrCode" parameterType="net.riking.mybatis.simple.entity.Role"  resultType="net.riking.mybatis.simple.entity.Role">
+        select *  from  roles
+        <trim prefix="where" prefixOverrides="and|or">
+            <if test="name!=null">
+             and   name =#{name}
+            </if>
+            <if test="code!=null">
+             and   code=#{code}
+            </if>
+        </trim>
+    </select>
+
+    <!-- 动态SQL操作 foreach   循环查询 和循环赋值
+    item:每次迭代的结果  collection: 循环集合或指定类型
+    separator：元素之间的分隔符,可选。  open：开始符号，可选。
+    close： 关闭符号，可选。 index： list和数组的序号，可选。
+    -->
+    <!--foreach   循环查询  从指定id集合中查询出数据  select * from roles WHERE id in ( ? , ? , ? ) -->
+   <select id="selectRoleByIds"  parameterType="long" resultType="net.riking.mybatis.simple.entity.Role">
+       select  *  from  roles
+       <where>
+          id in
+           <foreach collection="list" item="item" open="(" separator=","  close=")" index="index">
+                #{item}
+           </foreach>
+       </where>
+   </select>
+
+    <!--foreach   循环插入    insert into roles(code,name,description,created_by,updated_by) values (?,?,?,?,?) , (?,?,?,?,?)  -->
+    <insert id="insertRoles" parameterType="net.riking.mybatis.simple.entity.Role" >
+        insert  into   roles(code,name,description,created_by,updated_by)  values
+        <foreach collection="list" item="role" index="index"  open="" separator=","  close="">
+            (#{role.code},#{role.name},#{role.description},#{role.createdBy},#{role.updatedBy})
+        </foreach>
+    </insert>
+
+
+</mapper>

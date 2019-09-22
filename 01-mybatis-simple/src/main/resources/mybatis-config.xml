@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <settings>
+        <setting name="logImpl" value="LOG4J"/>
+        <setting name="cacheEnabled" value="true"/>
+        <setting name="mapUnderscoreToCamelCase" value="true"/>
+        <setting name="aggressiveLazyLoading" value="false"/>
+    </settings>
+
+
+
+    <environments default="development">
+        <environment id="development">
+            <transactionManager type="JDBC" />
+            <dataSource type="POOLED">
+                <property name="driver" value="com.mysql.jdbc.Driver" />
+                 <!--一定要加上访问数据库的编码格式，否则中文查询乱码导致操作数据乱码-->
+                <property name="url" value="jdbc:mysql://192.168.36.130:3306/sc_admin?useUnicode=true&amp;characterEncoding=UTF-8" />
+                <property name="username" value="root" />
+                <property name="password" value="123456" />
+            </dataSource>
+        </environment>
+    </environments>
+
+
+    <!-- 加载映射文件-->
+    <mappers>
+        <!--通过resource方法一次加载一个映射文件 -->
+        <mapper resource="mybatis/UserMapper.xml"/>
+        <mapper resource="mybatis/RoleMapper.xml"/>
+
+
+        <!-- 通过mapper接口加载单个 映射文件
+        遵循一些规范：需要将mapper接口类名和mapper.xml映射文件名称保持一致，且在一个目录中
+        上边规范的前提是：使用的是mapper代理方法
+         -->
+        <!-- <mapper class="com.iot.mybatis.mapper.UserMapper"/> -->
+
+        <!-- 批量加载mapper
+        指定mapper接口的包名，mybatis自动扫描包下边所有mapper接口进行加载
+        遵循一些规范：需要将mapper接口类名和mapper.xml映射文件名称保持一致，且在一个目录中
+        上边规范的前提是：使用的是mapper代理方法
+         -->
+      <!--  <package name="net.riking.mybatis.simple.mapper"/>-->
+
+    </mappers>
+</configuration>
+
